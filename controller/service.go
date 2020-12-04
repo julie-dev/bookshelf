@@ -1,55 +1,52 @@
 package controller
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
 
-type Info struct {
-	Code 		string 		`json:"code"`
-}
-
 type Book struct {
-	ID			int 		`json:"id"`
-	Name 		string 		`json:"name"`
-	Auther 		string 		`json:"auther"`
-	ISBN 		string 		`json:"isbn"`
-	Date 		time.Time 	`json:"date"`
-	Publisher 	string 		`json:"publisher"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Author    string    `json:"author"`
+	ISBN      string    `json:"isbn"`
+	Date      time.Time `json:"date"`
+	Publisher string    `json:"publisher"`
 }
 
-func NewBook() *Book {
-	return &Book{
-		Date: time.Now(),
-	}
-}
-
-func Process(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		if err := next(c); err != nil {
-			c.Error(err)
-		}
-		return nil
-	}
-}
-
-func TestHandler(c echo.Context) error {
-	body, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, string(body))
-}
+var (
+	bookshelf map[string]Book
+)
 
 func SaveBook(c echo.Context) error {
 
-	book, err := RequestOpenAPI(c.Param("code"))
+	isbn := c.Param("code")
+	if _, exists := bookshelf[isbn]; exists {
+		return errors.New("Book code is duplicated")
+	}
+
+	book, err := RequestOpenAPI(isbn)
 	if err != nil {
 		return err
 	}
 
+	bookshelf[book.ISBN] = *book
+
 	return c.JSON(http.StatusOK, book)
+}
+
+func GetBook(c echo.Context) error {
+
+	return nil
+}
+
+func GetBookList(c echo.Context) error {
+
+	return nil
+}
+
+func init() {
+	bookshelf = make(map[string]Book)
 }
