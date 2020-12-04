@@ -19,9 +19,9 @@ func New() *echo.Echo {
 	})
 
 	//TODO middlerware
-	b := controller.NewBook()
-	e.Use(b.Process)
-	e.GET("/", b.Handle)
+	e.Use(controller.Process)
+	e.GET("/", controller.TestHandler)
+	e.PUT("/save/:code", controller.SaveBook)
 
 	return e
 }

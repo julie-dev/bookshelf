@@ -2,9 +2,14 @@ package controller
 
 import (
 	"github.com/labstack/echo/v4"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
+
+type Info struct {
+	Code 		string 		`json:"code"`
+}
 
 type Book struct {
 	ID			int 		`json:"id"`
@@ -15,28 +20,36 @@ type Book struct {
 	Publisher 	string 		`json:"publisher"`
 }
 
-var (
-	bookList map[string]Book
-)
-
 func NewBook() *Book {
 	return &Book{
 		Date: time.Now(),
 	}
 }
 
-func (b *Book) Process(next echo.HandlerFunc) echo.HandlerFunc {
+func Process(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		c.Logger().Debug("pre-process")
 		if err := next(c); err != nil {
 			c.Error(err)
 		}
-		c.Logger().Debug("post process")
 		return nil
 	}
 }
 
-func (b *Book) Handle(c echo.Context) error {
-	c.Logger().Debug("handle")
-	return c.JSON(http.StatusOK, b)
+func TestHandler(c echo.Context) error {
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, string(body))
+}
+
+func SaveBook(c echo.Context) error {
+
+	book, err := RequestOpenAPI(c.Param("code"))
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, book)
 }
