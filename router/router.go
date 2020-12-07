@@ -12,9 +12,10 @@ func New() *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 
-	e.POST("/book/:code", controller.SaveBook)
-	e.GET("/book", controller.GetBookList)
-	e.GET("/book/:code", controller.GetBook)
+	e.POST("/books/update", controller.SaveBook)
+	e.GET("/books/search", controller.SearchBook)
+	e.GET("/books/:code", controller.GetBook)
+	e.GET("/books", controller.GetBookList)
 
 	return e
 }

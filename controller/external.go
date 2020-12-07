@@ -2,9 +2,9 @@ package controller
 
 import "time"
 
-func RequestOpenAPI(s string) (*Book, error) {
+func RequestOpenAPI(isbn string) (*Book, error) {
 	return &Book{
-		ISBN: s,
-		Date: time.Now(),
+		ISBN: isbn,
+		Date: time.Now().Local(),
 	}, nil
 }
