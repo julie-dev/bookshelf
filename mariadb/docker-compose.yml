@@ -1,0 +1,16 @@
+version: '3.1' 
+
+services: 
+  maria: 
+    image: mariadb:10.5
+    container_name: "mariadb" 
+    restart: always 
+    ports: 
+      - "3306:3306" 
+    volumes: 
+      - ~/mariadb/etc/mysql/conf.d:/etc/mysql/conf.d:ro 
+      - ~/mariadb/var/lib/mysql:/var/lib/mysql 
+      - ~/mariadb/var/log/maria:/var/log/maria 
+    environment: 
+      - MYSQL_ROOT_PASSWORD=bookshelf
+      - TZ="Asia/Seoul"
