@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bookshelf/config"
+	"bookshelf/controller"
 	"bookshelf/router"
 	"context"
 	"github.com/joeshaw/envdecode"
@@ -43,7 +45,7 @@ func NewCommand(ctx context.Context, name string, c Opts) *cobra.Command {
 		Use:   name,
 		Short: name + " provides a authentication interface for kubernetes cluster nodes.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return Run(ctx, c, name)
+			return Run(ctx, c)
 		},
 	}
 
@@ -51,9 +53,13 @@ func NewCommand(ctx context.Context, name string, c Opts) *cobra.Command {
 	return cmd
 }
 
-func Run(ctx context.Context, c Opts, name string) error {
+func Run(ctx context.Context, c Opts) error {
 
-	e := router.New()
+	var config config.Config
+	envdecode.MustDecode(&config)
+	service := controller.NewBookshelfService(&config)
+
+	e := router.New(service)
 
 	if c.LogLevel == "debug" {
 		e.Debug = true

@@ -6,16 +6,17 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func New() *echo.Echo {
+func New(service *controller.BookshelfService) *echo.Echo {
 
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 
-	e.POST("/books/update", controller.SaveBook)
-	e.GET("/books/search", controller.SearchBook)
-	e.GET("/books/:code", controller.GetBook)
-	e.GET("/books", controller.GetBookList)
+	books := e.Group("/books")
+	books.POST("/update", service.UpdateBook)
+	books.GET("/search", service.SearchBook)
+	books.GET("/:code", service.GetBook)
+	books.GET("/", service.GetBookList)
 
 	return e
 }

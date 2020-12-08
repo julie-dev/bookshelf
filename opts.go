@@ -6,12 +6,7 @@ import (
 )
 
 const (
-	DefaultServerIp   = "localhost"
-	DefaultServerPort = 8080
-	DefaultLogLevel   = "debug"
-	DefaultKafkaHost  = "localhost"
-	DefaultKafkaPort  = 9092
-	DefaultKafkaTopic = "sensor-data"
+	ApplicationVersion = "v1"
 )
 
 type Opts struct {
@@ -33,6 +28,8 @@ func installFlags(flags *pflag.FlagSet, c *Opts) {
 		f.Name = "mariadb." + f.Name
 		flags.AddGoFlag(f)
 	})
+
+	c.Version = ApplicationVersion
 }
 
 func initMariaDBFlags(flagset *flag.FlagSet, c *Opts) {
