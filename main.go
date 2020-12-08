@@ -10,13 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
-)
-
-const (
-	buildVersion = "1.0"
-	buildTime    = "20201225"
 )
 
 func main() {
@@ -32,7 +26,6 @@ func main() {
 
 	var opts Opts
 	envdecode.MustDecode(&opts)
-	opts.Version = strings.Join([]string{fileName, buildVersion, buildTime}, "-")
 
 	cmd := NewCommand(ctx, fileName, opts)
 	cmd.Execute()

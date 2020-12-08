@@ -14,6 +14,7 @@ type Document struct {
 	Author    []string  `json:"authors"`
 	PubDate   time.Time `json:"datetime"`
 	Publisher string    `json:"publisher"`
+	Thumbnail string    `json:"thumbnail"`
 }
 
 type OpenAPIResponse struct {
@@ -62,5 +63,6 @@ func RequestOpenAPI(config *config.Config, isbn string) (*Book, error) {
 		RegDate:   time.Now().Local().Format(time.RFC3339),
 		PubDate:   bookInfo.PubDate.Local().Format(time.RFC3339),
 		Publisher: bookInfo.Publisher,
+		Thumbnail: bookInfo.Thumbnail,
 	}, nil
 }

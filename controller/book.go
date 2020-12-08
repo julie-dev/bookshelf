@@ -8,4 +8,5 @@ type Book struct {
 	RegDate   string   `json:"reg_date"`
 	PubDate   string   `json:"pub_date"`
 	Publisher string   `json:"publisher"`
+	Thumbnail string   `json:"thumbnail"`
 }
