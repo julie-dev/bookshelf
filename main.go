@@ -3,6 +3,7 @@ package main
 import (
 	"bookshelf/config"
 	"bookshelf/controller"
+	"bookshelf/database"
 	"bookshelf/router"
 	"context"
 	"github.com/joeshaw/envdecode"
@@ -50,7 +51,13 @@ func Run(ctx context.Context, c Opts) error {
 
 	var config config.Config
 	envdecode.MustDecode(&config)
-	service := controller.NewBookshelfService(&config)
+
+	repository, err := database.NewRepository(&config.Database)
+	if err != nil {
+		return err
+	}
+
+	service := controller.NewBookshelfService(&config, repository)
 
 	e := router.New(service)
 

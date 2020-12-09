@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bookshelf/config"
+	"bookshelf/model"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,17 +22,17 @@ type OpenAPIResponse struct {
 	Documents []Document `json:"documents"`
 }
 
-func RequestOpenAPI(config *config.Config, isbn string) (*Book, error) {
+func RequestOpenAPI(config *config.Config, isbn string) (*model.Book, error) {
 
 	client := http.Client{
 		Timeout: time.Second * 5,
 	}
 
-	req, err := http.NewRequest("GET", config.RESTAPI_URL, nil)
+	req, err := http.NewRequest("GET", config.OpenAPIUrl, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("KakaoAK %v", config.RESTAPI_KEY))
+	req.Header.Add("Authorization", fmt.Sprintf("KakaoAK %v", config.OpenAPIKey))
 
 	q := req.URL.Query()
 	q.Add("target", "isbn")
@@ -56,12 +57,12 @@ func RequestOpenAPI(config *config.Config, isbn string) (*Book, error) {
 	}
 
 	bookInfo := bookResponse.Documents[0]
-	return &Book{
-		Title:     bookInfo.Title,
-		Author:    bookInfo.Author,
-		ISBN:      isbn,
-		RegDate:   time.Now().Local().Format(time.RFC3339),
-		PubDate:   bookInfo.PubDate.Local().Format(time.RFC3339),
+	return &model.Book{
+		Title:  bookInfo.Title,
+		Author: bookInfo.Author,
+		ISBN:   isbn,
+		//RegDate:   time.Now().Local().Format(time.RFC3339),
+		PubDate:   bookInfo.PubDate.Local(),
 		Publisher: bookInfo.Publisher,
 		Thumbnail: bookInfo.Thumbnail,
 	}, nil

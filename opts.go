@@ -10,11 +10,10 @@ const (
 )
 
 type Opts struct {
-	Version      string ``
-	ServerURL  	 string `env:"HTTP_SERVER_URL,required"`
-	LogLevel     string `env:"HTTP_SERVER_LOGLEVEL,default=debug"`
-	LogFile      string `env:"HTTP_SERVER_LOGFILE"`
-	MariaDBURL   string `env:"MARIA_DB_URL,required"`
+	Version      		string ``
+	ServerURL  	 		string `env:"HTTP_SERVER_URL,required"`
+	LogLevel     		string `env:"HTTP_SERVER_LOGLEVEL,default=debug"`
+	LogFile      		string `env:"HTTP_SERVER_LOGFILE"`
 }
 
 func installFlags(flags *pflag.FlagSet, c *Opts) {
@@ -37,5 +36,5 @@ func initMariaDBFlags(flagset *flag.FlagSet, c *Opts) {
 		flagset = flag.CommandLine
 	}
 
-	flagset.StringVar(&c.MariaDBURL, "url", c.MariaDBURL, "set MariaDB's ip:port")
+	//flagset.StringVar(&c.MariaDBURL, "url", c.MariaDBURL, "set MariaDB's ip:port")
 }

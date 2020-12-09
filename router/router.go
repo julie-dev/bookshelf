@@ -12,6 +12,8 @@ func New(service *controller.BookshelfService) *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 
+	e.Use(service.Repository.Transaction)
+
 	books := e.Group("/books")
 	books.POST("/update", service.UpdateBook)
 	books.GET("/search", service.SearchBook)
