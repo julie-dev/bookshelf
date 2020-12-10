@@ -18,7 +18,7 @@ func New(service *controller.BookshelfService) *echo.Echo {
 	books.POST("/update", service.UpdateBook)
 	books.GET("/search", service.SearchBook)
 	books.GET("/:code", service.GetBook)
-	books.GET("/", service.GetBookList)
+	books.GET("/list", service.GetBookList)
 
 	return e
 }

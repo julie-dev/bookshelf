@@ -7,9 +7,11 @@ import (
 	"bookshelf/model"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-uuid"
 	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/go-xorm/builder"
+	"github.com/go-xorm/xorm"
 )
 
 const (
@@ -36,32 +38,31 @@ func (s *BookshelfService) UpdateBook(c echo.Context) error {
 
 	isbn := c.QueryParam("code")
 	if len(isbn) != ISBN_13_LEN {
-		return e.ErrorResponse(c, http.StatusBadRequest,
-			fmt.Sprintf("Wrong isbn - %v", isbn))
+		return e.BadRequest(c, fmt.Sprintf("Wrong isbn - %v", isbn))
 	}
 
 	session := s.Repository.GetDBConn(c.Request().Context())
 	if session == nil {
-		return e.ErrorResponse(c, http.StatusInternalServerError,
-			errors.New("DB is not exists").Error())
+		return e.InternalError(c, errors.New("DB is not exists").Error())
 	}
 
-	if _, exists := s.bookshelf[isbn]; exists {
-		return e.ErrorResponse(c, http.StatusInternalServerError,
-			errors.New("Book code is duplicated").Error())
+	temp, err := s.Repository.GetBook(session, isbn)
+	if err != nil {
+		return e.InternalError(c, err.Error())
+	}
+
+	if temp != nil {
+		return e.BadRequest(c, "Book code already exists")
 	}
 
 	book, err := RequestOpenAPI(s.config, isbn)
 	if err != nil {
-		return e.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return e.InternalError(c, err.Error())
 	}
 
-	book.ID, err = uuid.GenerateUUID()
-	if err != nil {
-		return e.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+	if err := s.Repository.SaveBook(session, book); err != nil {
+		return e.InternalError(c, err.Error())
 	}
-
-	s.bookshelf[book.ISBN] = *book
 
 	return c.JSON(http.StatusOK, book)
 }
@@ -69,53 +70,71 @@ func (s *BookshelfService) UpdateBook(c echo.Context) error {
 func (s *BookshelfService) GetBook(c echo.Context) error {
 
 	isbn := c.Param("code")
-	book, exists := s.bookshelf[isbn]
-	if !exists {
-		return e.ErrorResponse(c, http.StatusBadRequest,
-			fmt.Sprintf("Invalid book code - %v", isbn))
+	if len(isbn) != ISBN_13_LEN {
+		return e.BadRequest(c, fmt.Sprintf("Wrong isbn - %v", isbn))
+	}
+
+	session := s.Repository.GetDBConn(c.Request().Context())
+	if session == nil {
+		return e.InternalError(c, errors.New("DB is not exists").Error())
+	}
+
+	book, err := s.Repository.GetBook(session, isbn)
+	if err != nil {
+		return e.InternalError(c, err.Error())
+	}
+
+	if book == nil {
+		return e.BadRequest(c, fmt.Sprintf("Book code doesn't exists - %v", isbn))
 	}
 
 	return c.JSON(http.StatusOK, book)
 }
 
 func (s *BookshelfService) GetBookList(c echo.Context) error {
-	return c.JSON(http.StatusOK, s.bookshelf)
+
+	session := s.Repository.GetDBConn(c.Request().Context())
+	if session == nil {
+		return e.InternalError(c, errors.New("DB is not exists").Error())
+	}
+
+	books, err := s.Repository.GetBookList(session)
+	if err != nil {
+		return e.InternalError(c, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, books)
 }
 
 func (s *BookshelfService) SearchBook(c echo.Context) error {
-	var result []*model.Book
-	var err error
 
 	target := c.QueryParam("target")
 	query := c.QueryParam("query")
-	switch target {
-	case "title":
-		result, err = searchBookUsingTitle(query)
-		if err != nil {
-			return e.ErrorResponse(c, http.StatusNotFound, "")
-		}
-	case "isbn":
-		result, err = searchBookUsingISBN(query)
-		if err != nil {
-			return e.ErrorResponse(c, http.StatusNotFound, "")
-		}
-	default:
-		return e.ErrorResponse(c, http.StatusBadRequest,
-			fmt.Sprintf("Please check target string - %v", target))
+
+	session := s.Repository.GetDBConn(c.Request().Context())
+	if session == nil {
+		return e.InternalError(c, errors.New("DB is not exists").Error())
 	}
 
-	return c.JSON(http.StatusOK, result)
-}
+	var prep *xorm.Session
+	switch target {
+	case "title":
+		sql, args, _ := builder.ToSQL(builder.Like{target, query})
+		prep = session.Where(sql, args...)
+	case "isbn":
+		prep = session.Where("isbn = ?", query)
+	default:
+		return e.BadRequest(c, fmt.Sprintf("Unsupported target - %v", target))
+	}
 
-func (s *BookshelfService) TestBook(c echo.Context) error {
-	return c.JSON(http.StatusOK, nil)
-}
+	books, err := s.Repository.GetBookList(prep)
+	if err != nil {
+		return e.InternalError(c, err.Error())
+	}
 
-func searchBookUsingTitle(title string) ([]*model.Book, error) {
+	if books == nil {
+		return e.BadRequest(c, "Book information not found")
+	}
 
-	return nil, nil
-}
-
-func searchBookUsingISBN(title string) ([]*model.Book, error) {
-	return nil, nil
+	return c.JSON(http.StatusOK, books)
 }
