@@ -6,6 +6,7 @@ import (
 	"bookshelf/database"
 	"bookshelf/router"
 	"context"
+	"github.com/facebookgo/grace/gracehttp"
 	"github.com/joeshaw/envdecode"
 	"github.com/spf13/cobra"
 	"os"
@@ -67,12 +68,13 @@ func Run(ctx context.Context, c Opts) error {
 	service := controller.NewBookshelfService(&config, repository)
 
 	e := router.New(service, c.APIVersion)
+	e.Server.Addr = c.ServerURL
 
 	if c.LogLevel == "debug" {
 		e.Debug = true
 	}
 
-	e.Logger.Fatal(e.Start(c.ServerURL))
+	e.Logger.Fatal(gracehttp.Serve(e.Server))
 
 	return nil
 }
