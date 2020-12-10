@@ -58,10 +58,9 @@ func RequestOpenAPI(config *config.Config, isbn string) (*model.Book, error) {
 
 	bookInfo := bookResponse.Documents[0]
 	return &model.Book{
-		Title:  bookInfo.Title,
-		Author: bookInfo.Author,
-		ISBN:   isbn,
-		//RegDate:   time.Now().Local().Format(time.RFC3339),
+		Title:     bookInfo.Title,
+		Author:    bookInfo.Author,
+		ISBN:      isbn,
 		PubDate:   bookInfo.PubDate.Local(),
 		Publisher: bookInfo.Publisher,
 		Thumbnail: bookInfo.Thumbnail,

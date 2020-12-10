@@ -14,6 +14,13 @@ import (
 	"syscall"
 )
 
+// @title Bookshelf
+// @version 1.0
+// @description System for register and manage book list
+
+// @host localhost:8080
+// @BasePath /api/v1/books
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	sig := make(chan os.Signal, 1)
@@ -59,7 +66,7 @@ func Run(ctx context.Context, c Opts) error {
 
 	service := controller.NewBookshelfService(&config, repository)
 
-	e := router.New(service)
+	e := router.New(service, c.APIVersion)
 
 	if c.LogLevel == "debug" {
 		e.Debug = true
