@@ -9,7 +9,7 @@ type ErrorMessage struct {
 	Code    int    `json:"code,required"`
 	Status  string `json:"status,required"`
 	Message string `json:"message"`
-}
+} //@name ErrorResponseFormat
 
 func ErrorResponse(c echo.Context, code int, msg string) error {
 	return c.JSON(code, newErrorMessage(code, msg))

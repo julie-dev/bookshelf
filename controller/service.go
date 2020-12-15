@@ -33,6 +33,14 @@ func NewBookshelfService(config *config.Config, repository *database.Repository)
 	return svc
 }
 
+// UpdateBook godoc
+// @Description search book info using book code and store it in DB
+// @Produce json
+// @Param code query string true "Book Code"
+// @Success 200 {array} model.Book
+// @Failure 400 {object} e.ErrorMessage
+// @Failure 500 {object} e.ErrorMessage
+// @Router /update [post]
 func (s *BookshelfService) UpdateBook(c echo.Context) error {
 	var err error
 
@@ -67,6 +75,14 @@ func (s *BookshelfService) UpdateBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, book)
 }
 
+// GetBook godoc
+// @Description get book by Code
+// @Produce json
+// @Param code path string true "Book Code"
+// @Success 200 {object} model.Book
+// @Failure 400 {object} e.ErrorMessage
+// @Failure 500 {object} e.ErrorMessage
+// @Router /{code} [get]
 func (s *BookshelfService) GetBook(c echo.Context) error {
 
 	isbn := c.Param("code")
@@ -91,6 +107,13 @@ func (s *BookshelfService) GetBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, book)
 }
 
+// GetBookList godoc
+// @Description get total book list
+// @Produce json
+// @Success 200 {array} model.Book
+// @Failure 400 {object} e.ErrorMessage
+// @Failure 500 {object} e.ErrorMessage
+// @Router /list [get]
 func (s *BookshelfService) GetBookList(c echo.Context) error {
 
 	session := s.Repository.GetDBConn(c.Request().Context())
@@ -106,6 +129,15 @@ func (s *BookshelfService) GetBookList(c echo.Context) error {
 	return c.JSON(http.StatusOK, books)
 }
 
+// SearchBook godoc
+// @Description query book info stored in DB
+// @Produce json
+// @Param target query string true "Search Type"
+// @Param query query string true "Search String"
+// @Success 200 {array} model.Book
+// @Failure 400 {object} e.ErrorMessage
+// @Failure 500 {object} e.ErrorMessage
+// @Router /search [get]
 func (s *BookshelfService) SearchBook(c echo.Context) error {
 
 	target := c.QueryParam("target")
