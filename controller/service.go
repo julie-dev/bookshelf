@@ -4,14 +4,12 @@ import (
 	"bookshelf/config"
 	"bookshelf/database"
 	e "bookshelf/error"
-	"bookshelf/model"
 	"errors"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"net/http"
-
 	"github.com/go-xorm/builder"
 	"github.com/go-xorm/xorm"
+	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 const (
@@ -20,15 +18,20 @@ const (
 
 type BookshelfService struct {
 	config     *config.Config
-	bookshelf  map[string]model.Book //repo
 	Repository *database.Repository
+	Handler    *ConnectionHandler
 }
 
 func NewBookshelfService(config *config.Config, repository *database.Repository) *BookshelfService {
 	svc := new(BookshelfService)
-	svc.bookshelf = make(map[string]model.Book)
 	svc.config = config
 	svc.Repository = repository
+	svc.Handler = &ConnectionHandler{
+		Send:          DoRequest,
+		CurrentStatus: ConnectionStatusClose,
+		RetryCount:    0,
+		MaxRetryCount: 100,
+	}
 
 	return svc
 }
@@ -63,7 +66,7 @@ func (s *BookshelfService) UpdateBook(c echo.Context) error {
 		return e.BadRequest(c, "Book code already exists")
 	}
 
-	book, err := RequestOpenAPI(s.config, isbn)
+	book, err := s.RequestOpenAPI(isbn)
 	if err != nil {
 		return e.InternalError(c, err.Error())
 	}
